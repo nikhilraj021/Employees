@@ -9,8 +9,9 @@ import { IoEye } from "react-icons/io5";
 import AddAndEditEmployee from "./AddAndEditEmployee";
 
 const EmployeesHome = () => {
-  const [EmployeesData, setEmployeesData] = useState([]);
+  const [employeesData, setEmployeesData] = useState([]);
   const [onClickAdd, setOnClickAdd] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
   const [searchedEmployee, setSearchedEmployee] = useState("");
 
   useEffect(() => {
@@ -26,6 +27,7 @@ const EmployeesHome = () => {
 
   const onClickCancel = () => {
     setOnClickAdd(false);
+    setEditingEmployee(null);
   };
 
   const addEmployee = (newEmployee) => {
@@ -34,28 +36,44 @@ const EmployeesHome = () => {
   };
 
   const deleteEmployee = (id) => {
-    let updatedData = filteredEmployees.filter((employee) => employee.id !== id);
-    setEmployeesData(updatedData)
+    const updatedData = employeesData.filter((employee) => employee.id !== id);
+    setEmployeesData(updatedData);
   };
 
-  const filteredEmployees = EmployeesData.filter(
+  const updateEmployee = (updatedEmployee) => {
+    setEmployeesData((prevData) =>
+      prevData.map((employee) =>
+        employee.id === updatedEmployee.id ? updatedEmployee : employee
+      )
+    );
+    setOnClickAdd(false);
+    setEditingEmployee(null);
+  };
+
+  const handleEdit = (employee) => {
+    setOnClickAdd(true);
+    setEditingEmployee(employee);
+  };
+
+  const filteredEmployees = employeesData.filter(
     (employee) =>
-      employee.name.toLowerCase().includes(searchedEmployee) ||
+      employee.name.toLowerCase().includes(searchedEmployee.toLowerCase()) ||
       employee.mobile.includes(searchedEmployee)
   );
 
   return (
     <div className="flex justify-center lg:items-center h-screen bg-[#A1BE95] py-5">
       <div className="flex flex-col gap-3 md:w-4/5">
-        <h1 className="text-xl font-semibold font-serif text-center ">
+        <h1 className="text-xl font-semibold font-serif text-center">
           Developer Employees List
         </h1>
-        <div className="flex items-center p-1 border md:w-2/3 mx-auto  ">
+        <div className="flex items-center p-1 border md:w-2/3 mx-auto">
           <input
             type="search"
             id="search"
-            className="outline-none bg-transparent w-full"
-            onChange={(e) => setSearchedEmployee(e.target.value.toLowerCase())}
+            className="outline-none bg-transparent w-full placeholder:text-gray-700"
+            placeholder="Search by name or mobile number"
+            onChange={(e) => setSearchedEmployee(e.target.value)}
           />
           <label htmlFor="search" className="px-1">
             <IoSearchOutline />
@@ -65,7 +83,10 @@ const EmployeesHome = () => {
         <div className="flex justify-end">
           <button
             className="flex items-center bg-[#F98866] gap-1 p-1 px-4 font-semibold text-gray-200 rounded-lg"
-            onClick={() => setOnClickAdd(true)}
+            onClick={() => {
+              setOnClickAdd(true);
+              setEditingEmployee(null);
+            }}
           >
             Add Employee
             <span>
@@ -78,12 +99,14 @@ const EmployeesHome = () => {
           <AddAndEditEmployee
             onClickCancel={onClickCancel}
             onAdd={addEmployee}
+            editingEmployee={editingEmployee}
+            onUpdate={updateEmployee}
           />
         )}
 
         <div>
           {filteredEmployees.length > 0 ? (
-            <ul className="bg-orange-300 md:grid grid-cols-2 lg:grid-col-3 gap-3 p-2 max-md:space-y-3">
+            <ul className=" md:grid grid-cols-2 lg:grid-cols-3 gap-3 p-2 max-md:space-y-3">
               {filteredEmployees.map((employee) => (
                 <li
                   key={employee.id}
@@ -93,7 +116,7 @@ const EmployeesHome = () => {
                     <span>
                       <IoMdContact size={40} />
                     </span>
-                    <div className="">
+                    <div>
                       <strong className="text-nowrap text-sm">
                         {employee.name}
                       </strong>
@@ -101,16 +124,19 @@ const EmployeesHome = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <span className="hover:text-blue-400">
+                    <span
+                      onClick={() => handleEdit(employee)}
+                      className="hover:text-blue-400 cursor-pointer"
+                    >
                       <MdModeEdit />
                     </span>
                     <span
                       onClick={() => deleteEmployee(employee.id)}
-                      className="hover:text-red-400"
+                      className="hover:text-red-400 cursor-pointer"
                     >
                       <MdDelete />
                     </span>
-                    <span className="hover:text-cyan-400">
+                    <span className="hover:text-cyan-400 cursor-pointer">
                       <IoEye />
                     </span>
                   </div>
@@ -118,7 +144,7 @@ const EmployeesHome = () => {
               ))}
             </ul>
           ) : (
-            <p className="text-center font-bold text-2xl bg-[#F98866] py-3 text-white">
+            <p className="text-center font-bold text-2xl py-3 text-white">
               No Data Found ...
             </p>
           )}

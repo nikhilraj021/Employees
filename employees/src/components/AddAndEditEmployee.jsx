@@ -1,41 +1,60 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RxCrossCircled } from "react-icons/rx";
 import { v4 as uuidv4 } from "uuid";
 
-const AddAndEditEmployee = ({ onClickCancel, onAdd }) => {
+const AddAndEditEmployee = ({
+  onClickCancel,
+  onAdd,
+  editingEmployee,
+  onUpdate,
+}) => {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    if (editingEmployee) {
+      setName(editingEmployee.name || "");
+      setMobile(editingEmployee.mobile || "");
+      setEmail(editingEmployee.email || "");
+      setAddress(editingEmployee.address || "");
+    } else {
+      setName("");
+      setMobile("");
+      setEmail("");
+      setAddress("");
+    }
+  }, [editingEmployee]);
+
   const validateForm = () => {
     let formErrors = {};
 
-    if (!name.trim()) {
+    if (!name || !name.trim()) {
       formErrors.name = "Name is required";
     }
 
-    if (!mobile.trim()) {
+    if (!mobile || !mobile.trim()) {
       formErrors.mobile = "Mobile number is required";
     } else if (!/^\d{10}$/.test(mobile.trim())) {
       formErrors.mobile = "Mobile number must be 10 digits";
     }
 
-    if (!email.trim()) {
+    if (!email || !email.trim()) {
       formErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       formErrors.email = "Please enter a valid email address";
     }
 
-    if (!address.trim()) {
+    if (!address || !address.trim()) {
       formErrors.address = "Address is required";
     }
 
     return formErrors;
   };
 
-  const handleAdd = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const formErrors = validateForm();
 
@@ -44,21 +63,33 @@ const AddAndEditEmployee = ({ onClickCancel, onAdd }) => {
       return;
     }
 
-    const newEmployee = {
-      id: uuidv4(),
-      name: name.trim(),
-      mobile: mobile.trim(),
-      address: address.trim(),
-    };
+    if (editingEmployee) {
+      const updatedEmployee = {
+        ...editingEmployee,
+        name: name ? name.trim() : "",
+        mobile: mobile ? mobile.trim() : "",
+        email: email ? email.trim() : "",
+        address: address ? address.trim() : "",
+      };
+      onUpdate(updatedEmployee);
+    } else {
+      const newEmployee = {
+        id: uuidv4(),
+        name: name ? name.trim() : "",
+        mobile: mobile ? mobile.trim() : "",
+        email: email ? email.trim() : "",
+        address: address ? address.trim() : "",
+      };
+      onAdd(newEmployee);
+    }
 
-    onAdd(newEmployee);
     setName("");
     setMobile("");
     setEmail("");
     setAddress("");
   };
 
-  const handleCLear = () => {
+  const handleClear = () => {
     setName("");
     setMobile("");
     setEmail("");
@@ -68,8 +99,10 @@ const AddAndEditEmployee = ({ onClickCancel, onAdd }) => {
   return (
     <div className="fixed inset-0 z-50 flex justify-center items-center bg-orange-100 bg-opacity-50">
       <div className="bg-[#A1BE95] w-60 md:w-1/2 p-5 rounded-3xl">
-        <div className="flex items-center justify-between ">
-          <h1 className="font-serif text-lg font-bold">Add Employees</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="font-serif text-lg font-bold">
+            {editingEmployee ? "Edit Employee" : "Add Employee"}
+          </h1>
           <button
             type="button"
             onClick={onClickCancel}
@@ -94,7 +127,9 @@ const AddAndEditEmployee = ({ onClickCancel, onAdd }) => {
               onChange={(e) => setName(e.target.value)}
               value={name}
             />
-            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -102,7 +137,7 @@ const AddAndEditEmployee = ({ onClickCancel, onAdd }) => {
               htmlFor="mobile"
               className="font-semibold text-sm lg:text-lg cursor-pointer"
             >
-              Mobile Number
+              Mobile
             </label>
             <input
               type="text"
@@ -112,7 +147,9 @@ const AddAndEditEmployee = ({ onClickCancel, onAdd }) => {
               onChange={(e) => setMobile(e.target.value)}
               value={mobile}
             />
-            {errors.mobile && <p className="text-red-500 text-sm">{errors.mobile}</p>}
+            {errors.mobile && (
+              <p className="text-red-500 text-sm">{errors.mobile}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -123,14 +160,16 @@ const AddAndEditEmployee = ({ onClickCancel, onAdd }) => {
               Email
             </label>
             <input
-              type="email"
+              type="text"
               id="email"
               className="bg-transparent border p-1 px-2 rounded-lg outline-none placeholder:text-gray-800 text-sm lg:text-lg"
               placeholder="Enter Email"
               onChange={(e) => setEmail(e.target.value)}
               value={email}
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -140,31 +179,32 @@ const AddAndEditEmployee = ({ onClickCancel, onAdd }) => {
             >
               Address
             </label>
-            <input
-              type="text"
+            <textarea
               id="address"
               className="bg-transparent border p-1 px-2 rounded-lg outline-none placeholder:text-gray-800 text-sm lg:text-lg"
               placeholder="Enter Address"
               onChange={(e) => setAddress(e.target.value)}
               value={address}
             />
-            {errors.address && <p className="text-red-500 text-sm">{errors.address}</p>}
+            {errors.address && (
+              <p className="text-red-500 text-sm">{errors.address}</p>
+            )}
           </div>
 
-          <div className="flex gap-3 justify-center">
-            <button
-              type="submit"
-              className="bg-[#F98866] text-white font-bold rounded-lg py-1 w-20 "
-              onClick={handleAdd}
-            >
-              Add
-            </button>
+          <div className="flex gap-2 justify-end">
             <button
               type="button"
-              className="bg-gray-300 font-bold rounded-lg py-1 w-20 "
-              onClick={handleCLear}
+              onClick={handleClear}
+              className="bg-gray-300 p-1 px-2 rounded-lg hover:bg-gray-400 text-sm lg:text-lg"
             >
               Clear
+            </button>
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              className="bg-[#F98866] p-1 px-2 rounded-lg text-white hover:bg-orange-400 text-sm lg:text-lg"
+            >
+              {editingEmployee ? "Update" : "Add"}
             </button>
           </div>
         </form>
