@@ -34,9 +34,8 @@ const EmployeesHome = () => {
   };
 
   const deleteEmployee = (id) => {
-    setEmployeesData((prevData) =>
-      prevData.filter((employee) => employee.id !== id)
-    );
+    let updatedData = filteredEmployees.filter((employee) => employee.id !== id);
+    setEmployeesData(updatedData)
   };
 
   const filteredEmployees = EmployeesData.filter(
