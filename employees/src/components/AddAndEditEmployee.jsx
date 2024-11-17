@@ -99,7 +99,7 @@ const AddAndEditEmployee = ({
   return (
     <div className="fixed inset-0 z-50 flex justify-center items-center bg-orange-100 bg-opacity-50">
       <div className="bg-[#A1BE95] w-60 md:w-1/2 p-5 rounded-3xl">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b pb-2">
           <h1 className="font-serif text-lg font-bold">
             {editingEmployee ? "Edit Employee" : "Add Employee"}
           </h1>

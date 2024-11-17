@@ -7,11 +7,13 @@ import { MdModeEdit } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { IoEye } from "react-icons/io5";
 import AddAndEditEmployee from "./AddAndEditEmployee";
+import ViewEmployee from "./ViewEmployee";
 
 const EmployeesHome = () => {
   const [employeesData, setEmployeesData] = useState([]);
   const [onClickAdd, setOnClickAdd] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [viewEmployeeData, setViewEmployeeData] = useState(null);
   const [searchedEmployee, setSearchedEmployee] = useState("");
 
   useEffect(() => {
@@ -61,20 +63,28 @@ const EmployeesHome = () => {
       employee.mobile.includes(searchedEmployee)
   );
 
+  const handleview = (employee) =>{
+    setViewEmployeeData(employee)
+  }
+
+  const handleCloseView = () =>{
+    setViewEmployeeData(null)
+  }
+
   return (
     <div className="flex justify-center lg:items-center h-screen bg-[#A1BE95] py-5">
       <div className="flex flex-col gap-3 md:w-4/5">
         <h1 className="text-xl font-semibold font-serif text-center">
           Developer Employees List
         </h1>
-        <div className="flex items-center p-1 border md:w-2/3 mx-auto">
+        <div className="flex items-center p-1 border  md:w-2/3 mx-auto">
           <input
             type="search"
             id="search"
             className="outline-none bg-transparent w-full placeholder:text-gray-700"
             placeholder="Search by name or mobile number"
             onChange={(e) => setSearchedEmployee(e.target.value)}
-          />
+          /> 
           <label htmlFor="search" className="px-1">
             <IoSearchOutline />
           </label>
@@ -103,6 +113,8 @@ const EmployeesHome = () => {
             onUpdate={updateEmployee}
           />
         )}
+
+        {viewEmployeeData && <ViewEmployee onClose={handleCloseView} employee = {viewEmployeeData}/>}
 
         <div>
           {filteredEmployees.length > 0 ? (
@@ -136,7 +148,7 @@ const EmployeesHome = () => {
                     >
                       <MdDelete />
                     </span>
-                    <span className="hover:text-cyan-400 cursor-pointer">
+                    <span onClick={() => handleview(employee)} className="hover:text-cyan-400 cursor-pointer">
                       <IoEye />
                     </span>
                   </div>
