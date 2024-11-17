@@ -10,7 +10,8 @@ import AddAndEditEmployee from "./AddAndEditEmployee";
 
 const EmployeesHome = () => {
   const [EmployeesData, setEmployeesData] = useState([]);
-  const [onClickAdd, setOnClickAdd] = useState(false)
+  const [onClickAdd, setOnClickAdd] = useState(false);
+  const [searchedEmployee, setSearchedEmployee] = useState("");
 
   useEffect(() => {
     axios
@@ -21,11 +22,28 @@ const EmployeesHome = () => {
       .catch((e) => {
         console.error("Error loading", e);
       });
-  });
+  }, []);
 
-  const onClickCancel = () =>{
-    setOnClickAdd(false)
-  }
+  const onClickCancel = () => {
+    setOnClickAdd(false);
+  };
+
+  const addEmployee = (newEmployee) => {
+    setEmployeesData((prevData) => [...prevData, newEmployee]);
+    setOnClickAdd(false);
+  };
+
+  const deleteEmployee = (id) => {
+    setEmployeesData((prevData) =>
+      prevData.filter((employee) => employee.id !== id)
+    );
+  };
+
+  const filteredEmployees = EmployeesData.filter(
+    (employee) =>
+      employee.name.toLowerCase().includes(searchedEmployee) ||
+      employee.mobile.includes(searchedEmployee)
+  );
 
   return (
     <div className="flex justify-center lg:items-center h-screen bg-[#A1BE95] py-5">
@@ -38,6 +56,7 @@ const EmployeesHome = () => {
             type="search"
             id="search"
             className="outline-none bg-transparent w-full"
+            onChange={(e) => setSearchedEmployee(e.target.value.toLowerCase())}
           />
           <label htmlFor="search" className="px-1">
             <IoSearchOutline />
@@ -45,7 +64,10 @@ const EmployeesHome = () => {
         </div>
 
         <div className="flex justify-end">
-          <button className="flex items-center bg-[#F98866] gap-1 p-1 px-4 font-semibold text-gray-200 rounded-lg" onClick={() => setOnClickAdd(true)}>
+          <button
+            className="flex items-center bg-[#F98866] gap-1 p-1 px-4 font-semibold text-gray-200 rounded-lg"
+            onClick={() => setOnClickAdd(true)}
+          >
             Add Employee
             <span>
               <FaPlus />
@@ -53,30 +75,43 @@ const EmployeesHome = () => {
           </button>
         </div>
 
-        {onClickAdd && <AddAndEditEmployee onClickCancel={onClickCancel} />}
+        {onClickAdd && (
+          <AddAndEditEmployee
+            onClickCancel={onClickCancel}
+            onAdd={addEmployee}
+          />
+        )}
 
-        <div >
-          {EmployeesData.length > 0 ? (
-            <ul className="bg-orange-300 md:grid grid-cols-2 lg:grid-col-3 gap-3 p-4 max-md:space-y-3">
-              {EmployeesData.map((employee) => (
-                <li key={employee.id} className="flex items-center bg-gray-200 p-2 justify-between">
-                  <div className="flex items-center gap-2">
+        <div>
+          {filteredEmployees.length > 0 ? (
+            <ul className="bg-orange-300 md:grid grid-cols-2 lg:grid-col-3 gap-3 p-2 max-md:space-y-3">
+              {filteredEmployees.map((employee) => (
+                <li
+                  key={employee.id}
+                  className="flex items-center bg-gray-200 p-2 justify-between"
+                >
+                  <div className="flex items-center gap-1">
                     <span>
                       <IoMdContact size={40} />
                     </span>
                     <div className="">
-                      <strong className="text-nowrap">{employee.name}</strong>
-                      <p>{employee.mobile}</p>
+                      <strong className="text-nowrap text-sm">
+                        {employee.name}
+                      </strong>
+                      <p className="text-sm">{employee.mobile}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <span>
+                    <span className="hover:text-blue-400">
                       <MdModeEdit />
                     </span>
-                    <span>
+                    <span
+                      onClick={() => deleteEmployee(employee.id)}
+                      className="hover:text-red-400"
+                    >
                       <MdDelete />
                     </span>
-                    <span>
+                    <span className="hover:text-cyan-400">
                       <IoEye />
                     </span>
                   </div>
@@ -84,7 +119,9 @@ const EmployeesHome = () => {
               ))}
             </ul>
           ) : (
-            <p>Loading ...</p>
+            <p className="text-center font-bold text-2xl bg-[#F98866] py-3 text-white">
+              No Data Found ...
+            </p>
           )}
         </div>
       </div>
