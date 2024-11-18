@@ -16,15 +16,23 @@ const EmployeesHome = () => {
   const [viewEmployeeData, setViewEmployeeData] = useState(null);
   const [searchedEmployee, setSearchedEmployee] = useState("");
 
+  // Load data from local storage on component mount
   useEffect(() => {
-    axios
-      .get("/sample.json")
-      .then((res) => {
-        setEmployeesData(res.data);
-      })
-      .catch((e) => {
-        console.error("Error loading", e);
-      });
+    const storedData = JSON.parse(localStorage.getItem("employeesData"));
+    if (storedData) {
+      setEmployeesData(storedData);
+    } else {
+      // Fetch initial data if not present in local storage (optional)
+      axios
+        .get("/sample.json")
+        .then((res) => {
+          setEmployeesData(res.data);
+          localStorage.setItem("employeesData", JSON.stringify(res.data));
+        })
+        .catch((e) => {
+          console.error("Error loading", e);
+        });
+    }
   }, []);
 
   const onClickCancel = () => {
@@ -33,21 +41,24 @@ const EmployeesHome = () => {
   };
 
   const addEmployee = (newEmployee) => {
-    setEmployeesData((prevData) => [...prevData, newEmployee]);
+    const updatedData = [...employeesData, newEmployee];
+    setEmployeesData(updatedData);
+    localStorage.setItem("employeesData", JSON.stringify(updatedData));
     setOnClickAdd(false);
   };
 
   const deleteEmployee = (id) => {
     const updatedData = employeesData.filter((employee) => employee.id !== id);
     setEmployeesData(updatedData);
+    localStorage.setItem("employeesData", JSON.stringify(updatedData));
   };
 
   const updateEmployee = (updatedEmployee) => {
-    setEmployeesData((prevData) =>
-      prevData.map((employee) =>
-        employee.id === updatedEmployee.id ? updatedEmployee : employee
-      )
+    const updatedData = employeesData.map((employee) =>
+      employee.id === updatedEmployee.id ? updatedEmployee : employee
     );
+    setEmployeesData(updatedData);
+    localStorage.setItem("employeesData", JSON.stringify(updatedData));
     setOnClickAdd(false);
     setEditingEmployee(null);
   };
@@ -63,28 +74,28 @@ const EmployeesHome = () => {
       employee.mobile.includes(searchedEmployee)
   );
 
-  const handleview = (employee) =>{
-    setViewEmployeeData(employee)
-  }
+  const handleView = (employee) => {
+    setViewEmployeeData(employee);
+  };
 
-  const handleCloseView = () =>{
-    setViewEmployeeData(null)
-  }
+  const handleCloseView = () => {
+    setViewEmployeeData(null);
+  };
 
   return (
     <div className="flex justify-center lg:items-center h-screen bg-[#A1BE95] py-5">
       <div className="flex flex-col gap-3 md:w-4/5">
         <h1 className="text-xl font-semibold font-serif text-center">
-          Developer Employees List
+          Employee Management System
         </h1>
-        <div className="flex items-center p-1 border  md:w-2/3 mx-auto">
+        <div className="flex items-center p-1 border md:w-2/3 mx-auto">
           <input
             type="search"
             id="search"
             className="outline-none bg-transparent w-full placeholder:text-gray-700"
-            placeholder="Search by name or mobile number"
+            placeholder="Search..."
             onChange={(e) => setSearchedEmployee(e.target.value)}
-          /> 
+          />
           <label htmlFor="search" className="px-1">
             <IoSearchOutline />
           </label>
@@ -114,11 +125,13 @@ const EmployeesHome = () => {
           />
         )}
 
-        {viewEmployeeData && <ViewEmployee onClose={handleCloseView} employee = {viewEmployeeData}/>}
+        {viewEmployeeData && (
+          <ViewEmployee onClose={handleCloseView} employee={viewEmployeeData} />
+        )}
 
         <div>
           {filteredEmployees.length > 0 ? (
-            <ul className=" md:grid grid-cols-2 lg:grid-cols-3 gap-3 p-2 max-md:space-y-3">
+            <ul className="md:grid grid-cols-2 lg:grid-cols-3 gap-3 p-2 max-md:space-y-3">
               {filteredEmployees.map((employee) => (
                 <li
                   key={employee.id}
@@ -148,7 +161,10 @@ const EmployeesHome = () => {
                     >
                       <MdDelete />
                     </span>
-                    <span onClick={() => handleview(employee)} className="hover:text-cyan-400 cursor-pointer">
+                    <span
+                      onClick={() => handleView(employee)}
+                      className="hover:text-cyan-400 cursor-pointer"
+                    >
                       <IoEye />
                     </span>
                   </div>
